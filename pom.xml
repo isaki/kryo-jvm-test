@@ -1,0 +1,188 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>io.isaki</groupId>
+  <artifactId>kryo-jvm-test</artifactId>
+  <version>5.0.0-SNAPSHOT</version>
+  <name>Kryo-JVM-Test</name>
+  <description>Test project for verifying JVM stability during type mismatches in Kryo.</description>
+
+  <!-- Properties -->
+  <properties>
+    <!-- See: https://maven.apache.org/plugins/index.html -->
+    <isaki.maven.jar.version>3.2.0</isaki.maven.jar.version>
+    <isaki.maven.shade.version>3.2.4</isaki.maven.shade.version>
+    <isaki.maven.compiler.version>3.8.1</isaki.maven.compiler.version>
+    <isaki.maven.clean.version>3.1.0</isaki.maven.clean.version>
+    <isaki.maven.resources.version>3.1.0</isaki.maven.resources.version>
+    <isaki.maven.install.version>3.0.0-M1</isaki.maven.install.version>
+    <isaki.maven.enforcer.version>3.0.0-M3</isaki.maven.enforcer.version>
+    <isaki.maven.surefire.version>3.0.0-M4</isaki.maven.surefire.version>
+    <isaki.maven.source.version>3.2.1</isaki.maven.source.version>
+    <isaki.maven.deploy.version>3.0.0-M1</isaki.maven.deploy.version>
+    <isaki.maven.site.version>3.9.0</isaki.maven.site.version>
+    <isaki.maven.javadoc.version>3.2.0</isaki.maven.javadoc.version>
+
+    <!-- JDK -->
+    <isaki.maven.jdk.version>1.8</isaki.maven.jdk.version>
+
+    <!-- Depenencies -->
+    <kryo.version>5.0.0-RC7</kryo.version>
+
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <maven.install.skip>true</maven.install.skip>
+  </properties>
+
+  <build>
+    <plugins>
+      <!-- Compiler Settings -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>${isaki.maven.compiler.version}</version>
+        <configuration>
+          <source>${isaki.maven.jdk.version}</source>
+          <target>${isaki.maven.jdk.version}</target>
+        </configuration>
+      </plugin>
+
+      <!-- Force JAR Settings -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
+        <version>${isaki.maven.jar.version}</version>
+        <configuration>
+          <!-- Since we are using shade for most of our build artifacts, 
+            we need a clean jar each time -->
+          <forceCreation>true</forceCreation>
+        </configuration>
+        <executions>
+          <execution>
+            <id>default-jar</id>
+            <phase>package</phase>
+            <goals>
+              <goal>jar</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+
+      <!-- Our applications use shaded jars -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-shade-plugin</artifactId>
+        <version>${isaki.maven.shade.version}</version>
+        <configuration>
+          <createDependencyReducedPom>false</createDependencyReducedPom>
+          <createSourcesJar>false</createSourcesJar>
+          <filters>
+            <filter>
+              <artifact>*:*</artifact>
+              <excludes>
+                <exclude>META-INF/*.SF</exclude>
+                <exclude>META-INF/*.DSA</exclude>
+                <exclude>META-INF/*.RSA</exclude>
+                <exclude>META-INF/**/module-info.class</exclude>
+                <exclude>META-INF/MANIFEST.MF</exclude>
+                <exclude>META-INF/LICENSE</exclude>
+                <exclude>META-INF/LICENSE.*</exclude>
+                <exclude>META-INF/DEPENDENCIES</exclude>
+                <exclude>META-INF/NOTICE</exclude>
+                <exclude>META-INF/NOTICE.*</exclude>
+                <exclude>about.*</exclude>
+                <exclude>module-info.class</exclude>
+              </excludes>
+            </filter>
+          </filters>
+        </configuration>
+        <executions>
+          <execution>
+            <phase>package</phase>
+            <goals>
+              <goal>shade</goal>
+            </goals>
+            <configuration>
+              <transformers>
+                <transformer
+                  implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />
+                <transformer
+                  implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                  <mainClass>io.isaki.kryojvmtest.KryoApplication</mainClass>
+                </transformer>
+              </transformers>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <!-- Control Plugin Versions -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-resources-plugin</artifactId>
+        <version>${isaki.maven.resources.version}</version>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-install-plugin</artifactId>
+        <version>${isaki.maven.install.version}</version>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-clean-plugin</artifactId>
+        <version>${isaki.maven.clean.version}</version>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-deploy-plugin</artifactId>
+        <version>${isaki.maven.deploy.version}</version>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-site-plugin</artifactId>
+        <version>${isaki.maven.site.version}</version>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <version>${isaki.maven.surefire.version}</version>
+        <configuration>
+          <argLine>-Djdk.net.URLClassPath.disableClassPathURLCheck=true</argLine>
+        </configuration>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-report-plugin</artifactId>
+        <version>${isaki.maven.surefire.version}</version>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-javadoc-plugin</artifactId>
+        <version>${isaki.maven.javadoc.version}</version>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-source-plugin</artifactId>
+        <version>${isaki.maven.source.version}</version>
+      </plugin>
+    </plugins>
+  </build>
+
+  <dependencies>
+    <dependency>
+      <groupId>com.esotericsoftware</groupId>
+      <artifactId>kryo</artifactId>
+      <version>${kryo.version}</version>
+    </dependency>
+  </dependencies>
+
+</project>
